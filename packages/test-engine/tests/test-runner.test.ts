@@ -1,0 +1,39 @@
+import { describe, expect, it } from 'vitest';
+import { TestRunner } from '../src/test-runner.js';
+
+describe('TestRunner', () => {
+  it('should execute a successful test', async () => {
+    const runner = new TestRunner();
+
+    const result = await runner.run({
+      id: 'test-001',
+      name: 'Basic health check',
+      execute: async () => ({
+        status: 'passed',
+        duration: 0,
+        message: 'Health check passed',
+      }),
+    });
+
+    expect(result.status).toBe('passed');
+    expect(result.message).toBe('Health check passed');
+    expect(result.duration).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should handle failed tests', async () => {
+    const runner = new TestRunner();
+
+    const result = await runner.run({
+      id: 'test-002',
+      name: 'Intentional failure',
+      execute: async () => ({
+        status: 'failed',
+        duration: 0,
+        message: 'Expected failure',
+      }),
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.message).toBe('Expected failure');
+  });
+});
