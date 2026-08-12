@@ -4,23 +4,35 @@ export class TestRunner {
   async run(test: TestCase): Promise<TestResult> {
     const start = performance.now();
     const timeout = test.timeout ?? 5000;
+    const retries = test.retries ?? 0;
 
-    try {
-      const result = await this.withTimeout(test.execute(), timeout);
+    let lastResult: TestResult | undefined;
 
-      return {
-        ...result,
-        duration: performance.now() - start,
-        attempts: 1,
-      };
-    } catch (error) {
-      return {
-        status: 'failed',
-        duration: performance.now() - start,
-        attempts: 1,
-        message: error instanceof Error ? error.message : 'Unknown test error',
-      };
+    for (let attempt = 1; attempt <= retries + 1; attempt++) {
+      try {
+        const result = await this.withTimeout(test.execute(), timeout);
+
+        lastResult = {
+          ...result,
+          duration: performance.now() - start,
+          attempts: attempt,
+        };
+
+        if (result.status === 'passed') {
+          return lastResult;
+        }
+      } catch (error) {
+        lastResult = {
+          status: 'failed',
+          duration: performance.now() - start,
+          attempts: attempt,
+          message:
+            error instanceof Error ? error.message : 'Unknown test error',
+        };
+      }
     }
+
+    return lastResult!;
   }
 
   private async withTimeout<T>(
