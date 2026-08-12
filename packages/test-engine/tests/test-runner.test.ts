@@ -60,4 +60,25 @@ describe('TestRunner', () => {
     expect(result.status).toBe('failed');
     expect(result.message).toContain('API response mismatch');
   });
+
+  it('should fail when a test exceeds timeout', async () => {
+    const runner = new TestRunner();
+
+    const result = await runner.run({
+      id: 'test-timeout',
+      name: 'Slow test',
+      timeout: 20,
+      execute: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        return {
+          status: 'passed',
+          duration: 0,
+        };
+      },
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.message).toContain('timed out');
+  });
 });
