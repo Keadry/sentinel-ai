@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TestRunner } from '../src/test-runner.js';
+import { assertEqual } from '../src/assertions.js';
 
 describe('TestRunner', () => {
   it('should execute a successful test', async () => {
@@ -35,5 +36,25 @@ describe('TestRunner', () => {
 
     expect(result.status).toBe('failed');
     expect(result.message).toBe('Expected failure');
+  });
+
+  it('should fail when an assertion throws', async () => {
+    const runner = new TestRunner();
+
+    const result = await runner.run({
+      id: 'test-003',
+      name: 'Response validation',
+      execute: async () => {
+        assertEqual('error', 'success', 'API response mismatch');
+
+        return {
+          status: 'passed',
+          duration: 0,
+        };
+      },
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.message).toContain('API response mismatch');
   });
 });
