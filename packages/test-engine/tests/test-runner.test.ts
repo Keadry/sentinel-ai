@@ -9,6 +9,9 @@ describe('TestRunner', () => {
     const result = await runner.run({
       id: 'test-001',
       name: 'Basic health check',
+      description: 'Checks whether the service is healthy',
+      tags: ['smoke', 'health'],
+      priority: 'high',
       execute: async () => ({
         status: 'passed',
         duration: 0,
